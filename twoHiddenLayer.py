@@ -8,23 +8,14 @@ num_nodes_hidden_layer_2 = 30
 num_nodes_output = 3
 
 
-#initialize weight and bias with random values
-W = np.random.rand(num_nodes_input,num_nodes_hidden_layer_1)
-W = np.multiply(W,0.01) #multiply entire matrix with 0.01 to reduce initial weights
-Wb = np.random.rand(num_nodes_hidden_layer_1)
-Wb = np.multiply(Wb,0.01)
-V = np.random.rand(num_nodes_hidden_layer_1,num_nodes_hidden_layer_2)
-V = np.multiply(V,0.01)
-Vb = np.random.rand(num_nodes_hidden_layer_2)
-Vb = np.multiply(Vb,0.01)
-U = np.random.rand(num_nodes_hidden_layer_2,num_nodes_output)
-U = np.multiply(U,0.01)
-Ub = np.random.rand(num_nodes_output)
-Ub = np.multiply(Ub,0.01)
-
 Dataset = Data.Dataset
 Target = Data.Target
-alpha = 0.3
+Testset = Data.Testset
+Expectedoutput = Data.Expectedoutput
+#initialize weight and bias with random values
+
+#all the values of learning rate
+alpha = [0.01,0.05,0.1,0.2,0.4,0.8]
 
 def sigmoid(x):
     return 1/(1+np.exp(-x))
@@ -127,14 +118,76 @@ def train(W,Wb,V,Vb,Dataset,Target,alpha):
                 Ub[i]+=alpha*delta_output[i]
             
 
-        if error<0.01:
+        if error<0.01 or epoch>10000:
             condition=False    
-        print(error)
-    
     print(f"Epoch count is :{epoch}")
 
+def test(W,Wb,V,Vb,Testset):
+
+    Z1 = [0]*num_nodes_hidden_layer_1
+    Z2 = [0]*num_nodes_hidden_layer_2
+    Y = [0]*num_nodes_output
+    Yconverted = [0]*num_nodes_output
+    num = 0
+
+    for X in Testset:
+        for j in range(num_nodes_hidden_layer_1):
+            Zinj = 0
+            for i in range(num_nodes_input):
+                Zinj += X[i]*W[i][j]
+            Zinj = Wb[j] + Zinj
+            Z1[j] = sigmoid(Zinj)
+            
+        for j in range(num_nodes_hidden_layer_2):
+            Zinj = 0
+            for i in range(num_nodes_hidden_layer_1):
+                Zinj += Z1[i]*V[i][j]
+            Zinj = Vb[j] + Zinj
+            Z2[j] = sigmoid(Zinj)
+
+        for j in range(num_nodes_output):
+            Yinj = 0
+            for i in range(num_nodes_hidden_layer_2):
+                Yinj += Z2[i]*U[i][j]
+            Yinj = Ub[j] + Yinj
+            Y[j] = sigmoid(Yinj)
+            
+            if Y[j]<0.5:
+                Yconverted[j] = 0
+            else:
+                Yconverted[j] = 1
 
 
-train(W,Wb,V,Vb,Dataset,Target,alpha)
+        if Yconverted[0]==0 and Yconverted[1]==0 and Yconverted[2]==1:
+            result = "K"
+        elif Yconverted[0]==0 and Yconverted[1]==1 and Yconverted[2]==0:
+            result = "D"
+        elif Yconverted[0]==1 and Yconverted[1]==0 and Yconverted[2]==0:
+            result = "M"
+        else :
+            result = "Cannot Identify"
+
+        print(f"Decimal output:{Y}   and output is: {result}  Output should be: {Expectedoutput[num]}")
+        num+=1
+
+        
+
+for i in range(6):
+    W = np.random.rand(num_nodes_input,num_nodes_hidden_layer_1)
+    W = np.multiply(W,0.01) #multiply entire matrix with 0.01 to reduce initial weights
+    Wb = np.random.rand(num_nodes_hidden_layer_1)
+    Wb = np.multiply(Wb,0.01)
+    V = np.random.rand(num_nodes_hidden_layer_1,num_nodes_hidden_layer_2)
+    V = np.multiply(V,0.01)
+    Vb = np.random.rand(num_nodes_hidden_layer_2)
+    Vb = np.multiply(Vb,0.01)
+    U = np.random.rand(num_nodes_hidden_layer_2,num_nodes_output)
+    U = np.multiply(U,0.01)
+    Ub = np.random.rand(num_nodes_output)
+    Ub = np.multiply(Ub,0.01)
+    print("\n#############################################################################\n")
+    print(f"the learning rate is {alpha[i]}\n")
+    train(W,Wb,V,Vb,Dataset,Target,alpha[i])
+    test(W,Wb,V,Vb,Testset)
 
     
