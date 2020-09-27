@@ -7,19 +7,20 @@ num_nodes_hidden_layer_1 = 80
 num_nodes_hidden_layer_2 = 30
 num_nodes_output = 3
 
-
+#get data from data.py file
 Dataset = Data.Dataset
 Target = Data.Target
 Testset = Data.Testset
 Expectedoutput = Data.Expectedoutput
-#initialize weight and bias with random values
 
 #all the values of learning rate
 alpha = [0.01,0.05,0.1,0.2,0.4,0.8]
 
+#activation function
 def sigmoid(x):
     return 1/(1+np.exp(-x))
 
+#function to train 
 def train(W,Wb,V,Vb,Dataset,Target,alpha):
     num_nodes_input = len(W)
     num_nodes_hidden_layer_1 = len(Wb)
@@ -37,14 +38,14 @@ def train(W,Wb,V,Vb,Dataset,Target,alpha):
     delta_hidden_layer_2 = [0]*num_nodes_hidden_layer_2
 
 
-    while condition is True:
+    while condition is True:                   #continue till error less than 0.01 or epaoch < 10000
         error = 0
         epoch += 1
-        for num in range(15):
+        for num in range(15):                  # for each input vector
 
             X=Dataset[num]
             T=Target[num]
-
+                                                        #forward propogation
             for j in range(num_nodes_hidden_layer_1):
                 Zinj = 0
                 for i in range(num_nodes_input):
@@ -72,10 +73,10 @@ def train(W,Wb,V,Vb,Dataset,Target,alpha):
 
             finalop[num] = Y.copy()
 
-            for i in range(3):
+            for i in range(3):                            #sum square error
                 error+=(finalop[num][i] - T[i])**2
 
-            for k in range(num_nodes_output):
+            for k in range(num_nodes_output):                       #backword Propogate
                 delta_output[k] = (T[k]-Y[k])*(Y[k])*(1-Y[k])
 
             for j in range(num_nodes_hidden_layer_2):
@@ -96,8 +97,8 @@ def train(W,Wb,V,Vb,Dataset,Target,alpha):
             for j in range(num_nodes_hidden_layer_1):
                 delta_hidden_layer_1[j] = delta_hidden_layer_1[j]*(Z1[j])*(1-Z1[j])
 
-            for i in range(num_nodes_input):
-                for j in range(num_nodes_hidden_layer_1):
+            for i in range(num_nodes_input):                                 #update weights
+                for j in range(num_nodes_hidden_layer_1):   
                     W[i][j]+=alpha*delta_hidden_layer_1[j]*X[i]    
             
             for i in range(num_nodes_hidden_layer_1):
@@ -118,10 +119,11 @@ def train(W,Wb,V,Vb,Dataset,Target,alpha):
                 Ub[i]+=alpha*delta_output[i]
             
 
-        if error<0.01 or epoch>10000:
+        if error<0.01 or epoch>10000:                           #breaking condition
             condition=False    
     print(f"Epoch count is :{epoch}")
 
+#function to test
 def test(W,Wb,V,Vb,Testset):
 
     Z1 = [0]*num_nodes_hidden_layer_1
@@ -156,8 +158,7 @@ def test(W,Wb,V,Vb,Testset):
                 Yconverted[j] = 0
             else:
                 Yconverted[j] = 1
-
-
+                                                                                #direct to appropriate output
         if Yconverted[0]==0 and Yconverted[1]==0 and Yconverted[2]==1:
             result = "K"
         elif Yconverted[0]==0 and Yconverted[1]==1 and Yconverted[2]==0:
@@ -171,8 +172,9 @@ def test(W,Wb,V,Vb,Testset):
         num+=1
 
         
-
+#for all the learning rates
 for i in range(6):
+    #initialize weight and bias with random values
     W = np.random.rand(num_nodes_input,num_nodes_hidden_layer_1)
     W = np.multiply(W,0.01) #multiply entire matrix with 0.01 to reduce initial weights
     Wb = np.random.rand(num_nodes_hidden_layer_1)
